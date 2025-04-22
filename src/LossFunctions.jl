@@ -97,6 +97,7 @@ function _eval_loss(
         return L(Inf)
     end
 
+	println(length(dataset.y))
     loss_val = if is_weighted(dataset)
         _weighted_loss(
             prediction,

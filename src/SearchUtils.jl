@@ -636,6 +636,7 @@ function construct_datasets(
     X,
     y,
     weights,
+	batch_assignments,
     variable_names,
     display_variable_names,
     y_variable_names,
@@ -652,6 +653,7 @@ function construct_datasets(
             L;
             index=j,
             weights=(weights === nothing ? weights : weights[j, :]),
+			batch_assignments=(batch_assignments === nothing ? batch_assignments : batch_assignments[j, :]),
             variable_names=variable_names,
             display_variable_names=display_variable_names,
             y_variable_name=if y_variable_names === nothing

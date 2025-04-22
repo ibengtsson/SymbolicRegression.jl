@@ -56,6 +56,8 @@ mutable struct BasicDataset{
     AX<:AbstractMatrix{T},
     AY<:Union{AbstractVector,Nothing},
     AW<:Union{AbstractVector,Nothing},
+	AB<:Union{AbstractVector{<:Integer},Nothing},
+	AUB<:Union{AbstractVector{<:Integer},Nothing},
     NT<:NamedTuple,
     XU<:Union{AbstractVector{<:Quantity},Nothing},
     YU<:Union{Quantity,Nothing},
@@ -68,6 +70,8 @@ mutable struct BasicDataset{
     const n::Int
     const nfeatures::Int
     const weights::AW
+	const batch_assignments::AB
+	const unique_batch_assignments::AUB
     const extra::NT
     const avg_y::Union{T,Nothing}
     use_baseline::Bool
@@ -119,6 +123,7 @@ dataset_fraction(d::SubDataset) = d.n / get_full_dataset(d).n
             y::Union{AbstractVector{T},Nothing}=nothing,
             loss_type::Type=Nothing;
             weights::Union{AbstractVector, Nothing}=nothing,
+			batch_assignments:: ...
             variable_names::Union{Array{String, 1}, Nothing}=nothing,
             y_variable_name::Union{String,Nothing}=nothing,
             extra::NamedTuple=NamedTuple(),
@@ -134,6 +139,7 @@ function Dataset(
     loss_type::Type{L}=Nothing;
     index::Int=1,
     weights::Union{AbstractVector,Nothing}=nothing,
+	batch_assignments::Union{AbstractVector{<:Integer},Nothing},
     variable_names::Union{Array{String,1},Nothing}=nothing,
     display_variable_names=variable_names,
     y_variable_name::Union{String,Nothing}=nothing,
@@ -157,6 +163,7 @@ function Dataset(
             kws[:loss_type];
             index,
             weights,
+			batch_assignments,
             variable_names,
             display_variable_names,
             y_variable_name,
@@ -165,7 +172,8 @@ function Dataset(
             y_units,
         )
     end
-
+	
+	
     n = size(X, 2)
     nfeatures = size(X, 1)
     variable_names = @something(variable_names, ["x$(i)" for i in 1:nfeatures])
@@ -187,6 +195,16 @@ function Dataset(
     else
         L
     end
+
+	# Validation for batch_assignments if provided
+    if batch_assignments !== nothing && length(batch_assignments) != n
+        error("Length of batch_assignments ($(length(batch_assignments))) must match dataset size ($n)")
+    end
+
+	unique_batch_assignments = nothing
+	if batch_assignments !== nothing
+		unique_batch_assignments = unique(batch_assignments)
+	end
 
     use_baseline = true
     baseline = one(out_loss_type)
@@ -219,6 +237,8 @@ function Dataset(
         typeof(X),
         typeof(y),
         typeof(weights),
+		typeof(batch_assignments),
+		typeof(unique_batch_assignments),
         typeof(extra),
         typeof(X_si_units),
         typeof(y_si_units),
@@ -231,6 +251,8 @@ function Dataset(
         n,
         nfeatures,
         weights,
+		batch_assignments,
+		unique_batch_assignments,
         extra,
         avg_y,
         use_baseline,
@@ -300,11 +322,24 @@ Create a batched dataset by randomly sampling from the original dataset.
 function batch(dataset::BasicDataset{T,L}, indices::AbstractVector{Int}) where {T,L}
     return SubDataset{T,L,typeof(dataset),typeof(indices)}(dataset, indices)
 end
+
 function batch(rng::AbstractRNG, dataset::BasicDataset{T,L}, batch_size::Int) where {T,L}
-    return batch(dataset, rand(rng, 1:(dataset.n), batch_size))
+    # If batch assignments are provided, use them
+    if dataset.batch_assignments !== nothing
+
+        # Randomly select a batch
+        batch_id = rand(rng, dataset.unique_batch_assignments)
+        indices = findall(x -> x == batch_id, dataset.batch_assignments)
+        return SubDataset{T,L,typeof(dataset),typeof(indices)}(dataset, indices)
+    else
+        # Fall back to original random sampling behavior
+        return batch(dataset, rand(rng, 1:(dataset.n), batch_size))
+    end
 end
+
 function batch(dataset::BasicDataset, batch_size::Int)
     return batch(default_rng(), dataset, batch_size)
 end
+
 
 end

@@ -369,6 +369,7 @@ which is useful for debugging and profiling.
     More iterations will improve the results.
 - `weights::Union{AbstractMatrix{T}, AbstractVector{T}, Nothing}=nothing`: Optionally
     weight the loss for each `y` by this value (same shape as `y`).
+- ...
 - `options::AbstractOptions=Options()`: The options for the search, such as
     which operators to use, evolution hyperparameters, etc.
 - `variable_names::Union{Vector{String}, Nothing}=nothing`: The names
@@ -453,6 +454,7 @@ function equation_search(
     y::AbstractMatrix;
     niterations::Int=100,
     weights::Union{AbstractMatrix{T},AbstractVector{T},Nothing}=nothing,
+    batch_assignments::Union{AbstractMatrix{Int64},AbstractVector{Int64},Nothing}=nothing,
     options::AbstractOptions=Options(),
     variable_names::Union{AbstractVector{String},Nothing}=nothing,
     display_variable_names::Union{AbstractVector{String},Nothing}=variable_names,
@@ -494,6 +496,7 @@ function equation_search(
         X,
         y,
         weights,
+		batch_assignments,
         variable_names,
         display_variable_names,
         y_variable_names,
