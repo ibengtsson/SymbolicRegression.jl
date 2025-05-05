@@ -335,6 +335,7 @@ function batch(rng::AbstractRNG, dataset::BasicDataset{T,L}, batch_size::Int) wh
         # Fall back to original random sampling behavior
         return batch(dataset, rand(rng, 1:(dataset.n), batch_size))
     end
+
 end
 
 function batch(dataset::BasicDataset, batch_size::Int)

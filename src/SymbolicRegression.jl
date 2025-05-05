@@ -530,6 +530,7 @@ end
 function equation_search(
     X::AbstractMatrix{T}, y::AbstractVector; kw...
 ) where {T<:DATA_TYPE}
+
     return equation_search(X, reshape(y, (1, size(y, 1))); kw..., v_dim_out=Val(1))
 end
 

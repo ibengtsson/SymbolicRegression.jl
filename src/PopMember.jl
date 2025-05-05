@@ -92,6 +92,7 @@ function PopMember(
             ),
         )
     end
+
     complexity = complexity === nothing ? -1 : complexity
     return PopMember{T,L,typeof(t)}(
         t,

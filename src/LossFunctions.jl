@@ -21,6 +21,7 @@ using ..InterfaceDynamicExpressionsModule: expected_array_type
 function _loss(
     ::AbstractArray{T1}, ::AbstractArray{T2}, ::LT
 ) where {T1,T2,LT<:Union{Function,SupervisedLoss}}
+
     return error(
         "Element type of `x` is $(T1) is different from element type of `y` which is $(T2)."
     )
@@ -37,6 +38,7 @@ end
 function _loss(
     x::AbstractArray{T}, y::AbstractArray{T}, loss::LT
 ) where {T,LT<:Union{Function,SupervisedLoss}}
+
     if loss isa SupervisedLoss
         return LossFunctions.mean(loss, x, y)
     else
@@ -65,6 +67,7 @@ end
         )
             A = expected_array_type(dataset.X, typeof(tree))
             out, complete = eval_tree_array(tree, dataset.X, options)
+
             if isnothing(out)
                 return out, false
             else
@@ -97,7 +100,7 @@ function _eval_loss(
         return L(Inf)
     end
 
-	println(length(dataset.y))
+
     loss_val = if is_weighted(dataset)
         _weighted_loss(
             prediction,
@@ -106,6 +109,7 @@ function _eval_loss(
             options.elementwise_loss,
         )
     else
+
         _loss(prediction, dataset.y::AbstractArray, options.elementwise_loss)
     end
 
@@ -152,6 +156,7 @@ function eval_loss(
         @assert tree isa AbstractExpression
         evaluator(f, tree, dataset, options, idx)
     else
+
         _eval_loss(tree, dataset, options, regularization)
     end
 
