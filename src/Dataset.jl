@@ -124,6 +124,7 @@ dataset_fraction(d::SubDataset) = d.n / get_full_dataset(d).n
             loss_type::Type=Nothing;
             weights::Union{AbstractVector, Nothing}=nothing,
 			batch_assignments:: ...
+			batch_assignments ...
             variable_names::Union{Array{String, 1}, Nothing}=nothing,
             y_variable_name::Union{String,Nothing}=nothing,
             extra::NamedTuple=NamedTuple(),
@@ -336,6 +337,7 @@ function batch(rng::AbstractRNG, dataset::BasicDataset{T,L}, batch_size::Int) wh
         return batch(dataset, rand(rng, 1:(dataset.n), batch_size))
     end
 
+    return batch(dataset, rand(rng, 1:(dataset.n), batch_size))
 end
 
 function batch(dataset::BasicDataset, batch_size::Int)
