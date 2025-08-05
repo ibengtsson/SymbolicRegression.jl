@@ -290,6 +290,7 @@ function import_module_on_workers(
     all_extensions = vcat(relevant_extensions, @something(worker_imports, Symbol[]))
 
     for ext in all_extensions
+		println(ext)
         push!(
             expr.args,
             quote

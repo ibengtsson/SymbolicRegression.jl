@@ -238,4 +238,44 @@ function violates_dimensional_constraints(
     return false
 end
 
+
+"""
+    violates_dimensional_constraints_two_trees(tree::AbstractExpressionNode, tree:AbstractExpressionNode, dataset::Dataset, options::AbstractOptions)
+
+Checks whether two expressions together violates dimensional constraints.
+"""
+function violates_dimensional_constraints_two_trees(
+    tree_one::AbstractExpressionNode{T},
+    tree_two::AbstractExpressionNode{T},
+    tree_one_units::AbstractVector{<:Quantity},
+    tree_two_units::AbstractVector{<:Quantity},
+    x_one::AbstractVector{T},
+    x_two::AbstractVector{T},
+    options::AbstractOptions,
+) where {T}
+    allow_wildcards = !(options.dimensionless_constants_only)
+    dimensional_output_one = violates_dimensional_constraints_dispatch(
+        tree_one, tree_one_units, x_one, options.operators, allow_wildcards
+    )
+
+	dimensional_output_two = violates_dimensional_constraints_dispatch(
+        tree_two, tree_two_units, x_two, options.operators, allow_wildcards
+    )
+
+
+	one_violates = dimensional_output_one.violates
+	two_violates = dimensional_output_two.violates
+	
+	# check if same dimension
+	same_dim = dimension(dimensional_output_one) == dimension(dimensional_output_two)
+
+	# check if we have a wildcard
+	same_dim |= dimensional_output_one.wildcard || dimensional_output_two.wildcard
+	
+	# final check
+	violates = one_violates || two_violates || !same_dim
+
+    return violates
+end
+
 end
